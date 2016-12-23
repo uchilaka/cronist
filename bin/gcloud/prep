@@ -1,0 +1,16 @@
+#!/bin/bash
+DF=$(date "+%Y-%m-%d__%H-%M")
+PROJECT_ID="site-jlegacy"
+BRANCH="gcloud-appengine"
+WDIR=$(echo ~/src/$PROJECT_ID)
+
+if [ -d $WDIR ]; then 
+  echo "Archiving working directory: $WDIR..."
+  mv -v $WDIR "${WDIR}-${DF}"
+fi
+
+gcloud config set project $PROJECT_ID \
+  && gcloud source repos clone $PROJECT_ID \
+    $WDIR  \
+  && cd $WDIR \
+  && git checkout $BRANCH

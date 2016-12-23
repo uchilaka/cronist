@@ -1,0 +1,29 @@
+#!/bin/bash
+PROJECT_NAME="site-jlegacy"
+BRANCH="gcloud-appengine"
+
+WDIR="/opt/containers/$PROJECT_NAME"
+if ! [ -d $WDIR ]; then 
+    WDIR="/Users/uchilaka/Developer/Larcity/Clients/$PROJECT_NAME/website"
+    if ! [ -d $WDIR ]; then 
+        echo "There was a problem launching your app: directory [$WDIR] does not exist!"
+        exit 1
+    fi
+fi
+
+cd $WDIR
+
+git checkout master 
+git add -A
+git commit -m "Make sure master has no pending changes"
+git push origin master
+
+git branch -D $BRANCH
+git checkout --orphan $BRANCH
+
+# make docker file 
+cp -v Dockerfile.gcloud Dockerfile
+
+git add -A 
+git commit -m "Making or updating gcloud branch"
+git push origin $BRANCH --force

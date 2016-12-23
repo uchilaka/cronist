@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# bash function to symlink nodejs program for linux container
+function setup_node() {
+    NODEPATH="/usr/bin/nodejs"
+
+    if ! [ -f $NODEPATH ]; then
+        NODEPATH="/usr/sbin/nodejs"
+        if ! [ -f $NODEPATH ]; then 
+            echo "ERROR: Failed to symlink nodejs. Aborting" 
+            exit 1
+        fi
+    fi
+
+    ln -sv $NODEPATH /usr/local/bin/node
+}
+
+# Set working directory for all sourcing bash scripts
+function set_working_dir() {
+    export WDIR="/opt/containers/$PROJECT_NAME"
+    if ! [ -d $WDIR ]; then 
+        export WDIR="$(echo ~/Developer/$PROJECT_NAME)"
+        if ! [ -d $WDIR ]; then
+            echo "There was a problem launching your app: directory [$WDIR] does not exist!"
+            exit 1
+        fi
+    fi
+}
+
+function process_flags() {
+    # accept arguments in bash script: http://stackoverflow.com/a/7069755/3726759
+    while test $# -gt 0; do 
+        case "$1" in 
+            --staging|--sandbox)
+                export BUILDMODE="sandbox" 
+                shift 
+                ;;
+
+            --dev)
+                export BUILDMODE="dev"
+                shift 
+                ;;
+
+            --deploy)
+                export DO_DEPLOY=1
+                shift 
+                ;;
+
+            --no-cache|-nc)
+                export DOCKER_TRAIL_FLAGS="--no-cache"
+                export BUILDMODE="no-cache" 
+                shift 
+                ;;
+
+            --tag|-t)
+                shift 
+                if test $# -gt 0; then 
+                    export TAG=$1
+                else 
+                    echo "No tag specified with tag flag. Aborting."
+                    exit 1
+                fi
+                shift 
+                ;;
+
+            --production|-p)
+                export BUILDMODE="production"
+                export DOCKER_TRAIL_FLAGS="--no-cache"
+                shift
+                ;;
+
+            *)
+                break
+                ;;
+        esac
+    done
+}
+
+# setup config file 
+export WDIR=$(echo .)
+export CONF="$WDIR/bin/private/vars.conf"
+
+echo "Initial working directory [ $WDIR ]"
+# initialize config file if not exists
+CONF=$WDIR/private/vars.conf 
+if ! [ -f $CONF ]; then
+    mkdir -p $WDIR/private
+    cp $WDIR/vars-sample.conf $CONF
+fi
+
+# include config file
+source $CONF
+echo "Config file [ $CONF ]"
+
+# set working directory
+set_working_dir
+
+# process flags 
+process_flags $@

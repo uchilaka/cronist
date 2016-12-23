@@ -1,0 +1,38 @@
+#!/bin/bash
+BF="./bin/bootstrap"
+if ! [ -f $BF ]; then 
+    echo "Please CD to the project root directory to continue. Aborting."
+    exit 1
+fi
+source $BF
+
+if ! [ -d $WDIR ]; then 
+    echo "ERROR! Working directory (\$WDIR) not set. Aborting"
+    exit 1
+fi
+
+echo "Working directory: [ $WDIR ]; Config file: [ $CONF ]; Docker tag: $TAG"
+# change to working directory
+cd $WDIR
+
+# initialize config file if not exists
+CONF=$WDIR/private/vars.conf 
+if ! [ -f $CONF ]; then
+    mkdir -p $WDIR/private
+    cp $WDIR/vars-sample.conf $CONF
+fi
+
+# @TODO figure out what Dockerfile to use - for now, use default Dockerfile
+cp -v $WDIR/Dockerfile.direct $WDIR/Dockerfile
+
+if [ -z $DOCKER_TRAIL_FLAGS ]; then 
+    docker build -t $TAG .
+else
+    docker build -t $TAG . "$DOCKER_TRAIL_FLAGS"
+fi
+
+
+function if_deploy() {
+    echo "This is happening because deploy was requested!"
+}
+! [[ -z DO_DEPLOY ]] && if_deploy

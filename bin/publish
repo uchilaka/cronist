@@ -1,0 +1,33 @@
+#!/bin/bash
+##### GLOBAL CONFIGURATION & PATHING ####
+# @TODO figure out a way to replicate this for all projects - or orchestrate setup scripts
+PROJECT_NAME="site-jlegacy"
+WDIR="/opt/containers/$PROJECT_NAME"
+if ! [ -d $WDIR ]; then 
+    WDIR="/Users/uchilaka/Developer/Larcity/Clients/$PROJECT_NAME/website"
+    if ! [ -d $WDIR ]; then 
+        echo "There was a problem launching your app: directory [$WDIR] does not exist!"
+        exit 1
+    fi
+fi
+
+# CONFIG (the rest)
+CONF=$WDIR/private/vars.conf 
+if ! [ -f $CONF ]; then 
+    echo "ERROR: No config file [$CONF] available! Aborting"
+    exit 1
+fi
+
+# include config variables
+source $CONF
+
+if [ -z $TAG ]; then 
+    echo "ERROR: No tag available! Aborting"
+    exit 1
+fi
+
+# change to working directory
+cd $WDIR
+
+# publish to google cloud
+gcloud docker -- push $TAG

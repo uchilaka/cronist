@@ -1,0 +1,25 @@
+{
+  "name": "docker-cronkeep",
+  "homepage": "https://github.com/uchilaka/docker-cronkeep",
+  "authors": [
+    "Uchenna Chilaka <uche.chilaka@gmail.com>"
+  ],
+  "description": "Dockerized port of the CronKeep PHP application",
+  "main": "",
+  "keywords": [
+    "cron",
+    "docker",
+    "CronKeep",
+    "cronkeep",
+    "php"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "www/src/assets/bower",
+    "test",
+    "tests"
+  ]
+}

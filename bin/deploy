@@ -1,0 +1,52 @@
+#!/bin/bash
+PROJECT_NAME="site-jlegacy"
+WDIR="/usr/src/app"
+if ! [ -d $WDIR ]; then 
+    WDIR="/opt/containers/$PROJECT_NAME"
+    if ! [ -d $WDIR ]; then 
+        WDIR="/Users/uchilaka/Developer/Larcity/Clients/$PROJECT_NAME/website"
+        if ! [ -d $WDIR ]; then 
+            echo "There was a problem launching your app: directory [$WDIR] does not exist!"
+            exit 1
+        fi
+    fi
+else
+    # in docker container 
+    echo "Running in Docker container!"
+fi
+
+CONF=$WDIR/private/vars.conf
+if ! [ -f $CONF ]; then 
+   echo "ERROR: No var.conf file found [$CONF]. Aborting."
+   exit 1
+fi
+source $CONF
+
+if [ -z $PORT ]; then 
+    echo "ERROR: PORT MUST be set in config file!"
+    exit 1
+fi
+
+# initialize logs directory if not exists
+LOGS=$WDIR/logs 
+WWW_DIR=$WDIR/www
+if ! [ -d $LOGS ]; then 
+    mkdir -vp $LOGS 
+fi
+
+if ! [ -d $WWW_DIR ]; then 
+    mkdir -vp $WWW_DIR
+fi
+
+# Found config file - include variables
+source $CONF
+echo "Deploying tag: $TAG"
+
+# update bower dependencies
+bower update
+
+docker run -p $PORT:80 --name=$INSTANCE_NAME \
+-v $WDIR/logs:/usr/src/app/logs \
+-v $WDIR/www:/usr/local/apache2/htdocs/ \
+--restart unless-stopped \
+-d $TAG
